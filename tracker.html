@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Yearly Todo</title>
+    <!-- the mobile thing -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reset-css@5.0.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Roboto Slab', serif;
+            background-color: #F5F5F4;
+        }
+
+        h1 {
+            font-size: 40px;
+        }
+
+        h2 {
+            font-size: 30px;
+        }
+
+        h3 {
+            font-size: 24px;
+        }
+
+        h4 {
+            font-size: 20px;
+        }
+
+        h5 {
+            font-size: 16px;
+        }
+
+        h6 {
+            font-size: 14px;
+        }
+
+        p {
+            font-size: 14px;
+        }
+
+        /* set all headings to bold */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: bold;
+        }
+
+        button {
+            background: #1B263B;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+            color: #D9DFE8;
+            cursor: pointer;
+            font-family: 'Roboto Slab', serif;
+            font-weight: 500;
+        }
+
+        button.text {
+            background: none;
+            color: #1B263B;
+        }
+
+        button.text:hover {
+            background: rgba(13, 27, 42, 0.05);
+        }
+
+        button:active {
+            outline-color: #b71c1c;
+            border-color: red;
+        }
+
+        button.close {
+            display: block;
+            margin: 1em 0;
+            width: 100%;
+            font-size: medium;
+        }
+
+        #calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            width: 100%;
+        }
+
+        main {
+            max-width: 800px;
+            display: relative;
+            margin: 0 auto;
+        }
+
+        .day {
+            display: grid;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: rgba(13, 27, 42, 0.05);
+            text-transform: uppercase;
+            color: rgb(13, 27, 42);
+            font-size: small;
+            line-height: 1.5;
+            /* animate the background colour and outline colour */
+            transition: all 0.5s;
+            /* add transition for when another class changes the background colour */
+            transition-property: background-color, outline-color;
+        }
+
+        .day:nth-child(2n + 1) {
+            background-color: rgba(13, 27, 42, 0.08);
+        }
+
+        .day div {
+            text-align: center;
+        }
+
+        .day.dns {
+            filter: opacity(0.3);
+        }
+
+
+        .day div:nth-child(1) {
+            opacity: 0.5;
+        }
+
+        .day div:nth-child(3) {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .day.today {
+            /* add a dotted outline with a gap to highlight the div */
+            outline-style: dashed;
+            outline-width: 4px;
+            outline-offset: 5px;
+            cursor: pointer;
+            transition: all 0.5s;
+        }
+
+        .day.today:hover {
+            transform: scale(1.2);
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        nav>div {
+            display: block;
+            background-color: #F5F5F4;
+            padding: 1em;
+        }
+
+        .modal {
+            position: fixed;
+            background: #ECECEA;
+            border: 1px solid #d8d8cb;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 800px;
+            padding: 0;
+        }
+
+        .modal>div {
+            padding: 1em;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        /* .modal to cover entire screen on mobile edia query */
+        @media (max-width: 800px) {
+            .modal {
+                top: 0;
+                left: 0;
+                height: 100vh;
+                overflow: scroll;
+                border-radius: 0;
+                margin: 0;
+            }
+
+            .modal::backdrop {
+                background-color: red;
+            }
+        }
+
+
+
+        /* set backdrop colour */
+        .modal::backdrop {
+            background-color: #E3E3DE;
+        }
+
+        .modal h2 {
+            text-align: center;
+        }
+
+        /* space out the modal lists */
+        #settingsModal ul,
+        #todoModal ul {
+            margin: 20px 0;
+        }
+
+        /* and the list items */
+        #settingsModal li,
+        #todoModal li {
+            padding: 10px 0;
+        }
+
+        /* and move the button off to the right */
+        #settingsModal li button,
+        #todoModal li button {
+            margin-right: 1em;
+        }
+
+        #calendar .day.completion-0 {
+            background-color: #d71c1c;
+            outline-color: #d71c1c;
+            color: white;
+        }
+
+        #calendar .day.completion-20 {
+            background-color: #d32f2f;
+            outline-color: #d32f2f;
+            color: white;
+        }
+
+        #calendar .day.completion-40 {
+            background-color: #f57c00;
+            outline-color: #f57c00;
+            color: white;
+        }
+
+        #calendar .day.completion-60 {
+            background-color: #fb8c00;
+            outline-color: #fb8c00;
+            color: white;
+        }
+
+        #calendar .day.completion-80 {
+            background-color: #ffaa00;
+            outline-color: #ffaa00;
+            color: black;
+        }
+
+        #calendar .day.completion-100 {
+            background-color: #008614;
+            outline-color: #008614;
+            color: white;
+        }
+
+        .day {
+            background: none;
+            margin: 1em;
+            border-radius: 4px;
+        }
+
+        .day:nth-child(2n + 1) {
+            background: none;
+        }
+
+        #newTaskForm {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin: 1em 0;
+        }
+
+        /* style the input and button to appear connected */
+        #newTaskForm input {
+            border-radius: 0;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+            flex-grow: 1;
+        }
+
+        #newTaskForm button {
+            border-radius: 0;
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        #newTaskForm input,
+        #newTaskForm button {
+            border: 1px solid #1B263B;
+            padding: 0.5em;
+            box-sizing: border-box;
+            font-family: 'Roboto Slab', serif;
+            font-weight: 400;
+            font-size: medium;
+        }
+
+        #anyTasksStreak,
+        #allTasksStreak {
+
+            border-radius: 5px;
+            margin: 1em 0;
+            padding: 1em;
+            text-align: center;
+        }
+
+        #anyTasksStreakScore,
+        #allTasksStreakScore {
+            font-size: 5em;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+        }
+
+        /* 1em margin bottom on the heading */
+        #anyTasksStreak h4,
+        #allTasksStreak h4 {
+            margin-bottom: 1em;
+        }
+
+        /* show the streaks side-by-side for media query over 800px */
+        @media (min-width: 800px) {
+
+            #anyTasksStreak,
+            #allTasksStreak {
+                display: inline-block;
+                width: 40%;
+                margin: 1em 2.5%;
+            }
+        }
+
+        /* style the <i> in streak divs as a round white circle */
+        .badge {
+            background-color: white;
+            border-radius: 50%;
+            padding: 0.5em;
+            margin: 0.5em;
+            margin-top: 1em;
+            font-size: 2em;
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+            border: 2px solid #fff;
+            display: inline-block;
+            text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes thumbs-up {
+            0% {
+                transform: rotate(0deg) scale(1);
+                transform-origin: bottom left;
+            }
+
+            60% {
+                transform: rotate(0deg) scale(1);
+                transform-origin: bottom left;
+                animation-timing-function: ease-out;
+            }
+
+            70% {
+                transform: rotate(-9deg) scale(1.4) translateX(-5px);
+                transform-origin: bottom left;
+                animation-timing-function: ease-in;
+            }
+
+            73% {
+                transform: rotate(2deg) scale(1.4) translateX(-5px);
+                transform-origin: bottom left;
+            }
+
+            76% {
+                transform: rotate(-2deg) scale(1.4) translateX(-5px);
+                transform-origin: bottom left;
+            }
+
+            97% {
+                transform: rotate(-2deg) scale(1.4) translateX(-5px);
+                transform-origin: bottom left;
+            }
+
+            99% {
+                transform: rotate(2deg) scale(1);
+                transform-origin: bottom left;
+            }
+        }
+
+        @keyframes rotate3d {
+            0% {
+                transform: rotateY(0deg);
+            }
+
+            15% {
+                transform: rotateY(180deg);
+            }
+
+            30% {
+                transform: rotateY(0deg);
+            }
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(1, 1) translateY(0);
+            }
+
+            50% {
+                transform: scale(1, 1) translateY(0);
+            }
+
+            55% {
+                transform: scale(1.1, .9) translateY(0);
+            }
+
+            65% {
+                transform: scale(.9, 1.1) translateY(-15px);
+            }
+
+            70% {
+                transform: scale(1, 1) translateY(0);
+            }
+
+            100% {
+                transform: scale(1, 1) translateY(0);
+            }
+        }
+
+        @keyframes chunk {
+            2% {
+    transform: translate(-3px, 6px) rotate(12deg);
+}
+4% {
+    transform: translate(5px, -4px) rotate(15deg);
+}
+6% {
+    transform: translate(-1px, 5px) rotate(-14deg);
+}
+8% {
+    transform: translate(-5px, 1px) rotate(-7deg);
+}
+10% {
+    transform: translate(-3px, 6px) rotate(-1deg);
+}
+12% {
+    transform: translate(1px, 2px) rotate(0deg);
+}
+14% {
+    transform: translate(5px, 0px) rotate(11deg);
+}
+16% {
+    transform: translate(4px, 4px) rotate(9deg);
+}
+18% {
+    transform: translate(2px, 5px) rotate(-13deg);
+}
+20% {
+    transform: translate(-4px, 1px) rotate(-4deg);
+}
+22% {
+    transform: translate(4px, 2px) rotate(-12deg);
+}
+24% {
+    transform: translate(1px, -2px) rotate(-3deg);
+}
+26% {
+    transform: translate(-0px, -5px) rotate(-7deg);
+}
+28% {
+    transform: translate(1px, 2px) rotate(15deg);
+}
+30% {
+    transform: translate(2px, -5px) rotate(1deg);
+}
+32% {
+    transform: translate(4px, -5px) rotate(-9deg);
+}
+34% {
+    transform: translate(-5px, 2px) rotate(-8deg);
+}
+36% {
+    transform: translate(6px, 4px) rotate(8deg);
+}
+38% {
+    transform: translate(-4px, -2px) rotate(-4deg);
+}
+0%, 40%, 100% {
+    transform: translate(0, 0) rotate(0);
+}
+        }
+
+        @keyframes finale {
+
+40% {
+    transform: translate(0) rotate(0) scale(1);
+}
+44% {
+    transform: translate(-0.5px, 0.5px) rotate(-0.5deg) scale(1.04);
+}
+48% {
+    transform: translate(-1.5px, 2.5px) rotate(1.5deg) scale(1.08);
+}
+52% {
+    transform: translate(-1.5px, 1.5px) rotate(1.5deg) scale(1.12);
+}
+54% {
+    transform: translate(-1.5px, -1.5px) rotate(-0.5deg) scale(1.16);
+}
+56% {
+    transform: translate(2.5px, 1.5px) rotate(0.5deg) scale(1.2);
+}
+58% {
+    transform: translate(-1.5px, -1.5px) rotate(0.5deg) scale(1.24);
+}
+60% {
+    transform: translate(1.5px, 0.5px) rotate(0.5deg) scale(1.28);
+}
+62% {
+    transform: translate(-0.5px, -1.5px) rotate(1.5deg) scale(1.32);
+}
+64% {
+    transform: translate(0.5px, 1.5px) rotate(-0.5deg) scale(1.36);
+}
+66% {
+    transform: translate(-0.5px, 2.5px) rotate(0.5deg) scale(1.4);
+}
+68% {
+    transform: translate(2.5px, 2.5px) rotate(1.5deg) scale(1.4);
+}
+70% {
+    transform: translate(1.5px, -1.5px) rotate(0.5deg) scale(1.4);
+}
+71% {
+    transform: translate(-1.5px, -1.5px) rotate(0.5deg) scale(1.4);
+}
+72% {
+    transform: translate(0.5px, 2.5px) rotate(-0.5deg) scale(1.4);
+}
+73% {
+    transform: translate(1.5px, -0.5px) rotate(0.5deg) scale(1.4);
+}
+74% {
+    transform: translate(0.5px, -1.5px) rotate(1.5deg) scale(1.4);
+}
+75% {
+    transform: translate(-0.5px, -1.5px) rotate(1.5deg) scale(1.4);
+}
+76% {
+    transform: translate(-0.5px, 0.5px) rotate(0.5deg) scale(1.4);
+}
+77% {
+    transform: translate(1.5px, -1.5px) rotate(0.5deg) scale(1.4);
+}
+78% {
+    transform: translate(1.5px, -0.5px) rotate(0.5deg) scale(1.4);
+}
+79% {
+    transform: translate(1.5px, -0.5px) rotate(0.5deg) scale(1.4);
+}
+80% {
+    transform: translate(0, 0) rotate(0) scale(1.4);
+}
+99% {
+    transform: translate(0, 0) rotate(0) scale(1.4);
+}
+100% {
+    transform: translate(0, 0) rotate(0) scale(1);
+}
+}
+
+@keyframes shakeAndScale {
+
+/* Section 1: seconds 0-2 */
+0%, 28% {
+    transform: translate(0, 0) scale(1);
+}
+
+/* Section 2: seconds 2-5 - Shake slowly at first with increasing speed towards the end of this section. */
+/* And increase in scale from 1 to 1.5 at an increasing speed */
+29% {
+    transform: translate(-1px, 1px) scale(1.05);
+}
+
+32% {
+    transform: translate(1px, -1px) scale(1.1);
+}
+
+35% {
+    transform: translate(-2px, 2px) scale(1.15);
+}
+
+38% {
+    transform: translate(2px, -2px) scale(1.2);
+}
+
+41% {
+    transform: translate(-2px, 2px) scale(1.25);
+}
+
+44% {
+    transform: translate(3px, -3px) scale(1.3);
+}
+
+47% {
+    transform: translate(-3px, 3px) scale(1.35);
+}
+
+50% {
+    transform: translate(4px, -4px) scale(1.4);
+}
+
+53% {
+    transform: translate(-4px, 4px) scale(1.45);
+}
+
+56% {
+    transform: translate(5px, -5px) scale(1.5);
+}
+
+58% {
+    transform: translate(-5px, 5px) scale(1.55);
+}
+
+60% {
+    transform: translate(6px, -6px) scale(1.6);
+}
+
+61% {
+    transform: translate(-6px, 6px) scale(1.65);
+}
+
+62% {
+    transform: translate(7px, -7px) scale(1.7);
+}
+
+63% {
+    transform: translate(-7px, 7px) scale(1.75) rotate(10deg);
+}
+
+64% {
+    transform: translate(8px, -8px) scale(1.8) rotate(-10deg);
+}
+
+65% {
+    transform: translate(-8px, 8px) scale(1.85) rotate(0);
+}
+
+66% {
+    transform: translate(8px, -8px) scale(1.8) rotate(-20deg);
+}
+
+67% {
+    transform: translate(-8px, 8px) scale(1.85) rotate(10deg);
+}
+
+68% {
+    transform: translate(8px, -8px) scale(1.8) rotate(-10deg);
+}
+69% {
+    transform: translate(-8px, 8px) scale(1.85) rotate(30deg);
+}
+
+70% {
+    transform: translate(8px, -8px) scale(1.8) rotate(-20deg);
+}
+71% {
+    transform: translate(-8px, 8px) scale(1.85) rotate(0);
+}
+
+72% {
+    transform: translate(0, 0) scale(1.9);
+}
+
+
+/* Section 3: seconds 5-6 */
+72%, 85% {
+    transform: translate(0, 0) scale(1.9);
+}
+
+/* Section 4: seconds 6-7 */
+86%, 100% {
+    transform: translate(0, 0) scale(1);
+}
+}
+
+
+
+
+
+        /* stylise the icon and disc for each level of streak from good to platinum */
+        .good .badge {
+            background: linear-gradient(to bottom right, #159f1c, #155e18);
+            color: white;
+        }
+
+        .good .badge i {
+            animation: thumbs-up 5s infinite;
+        }
+
+        .star .badge {
+            background-color: rgb(26, 53, 96);
+            background-image: radial-gradient(2px 1px at 21px 2px, #aaa, rgba(0,0,0,0)),
+    radial-gradient(1px 2px at 40px 50px, #ccc, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 58px 8px, #aaa, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 13px 30px, #bbb, rgba(0,0,0,0)),
+    radial-gradient(2px 1px at 54px 4px, #bbb, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 30px 5px, #aaa, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 60px 30px, #bbb, rgba(0,0,0,0)),
+    radial-gradient(5px 5px at 40px 20px, #5900ff, rgba(0,0,0,0)),
+    radial-gradient(1px 2px at 34px 20px, #ccc, rgba(0,0,0,0)), linear-gradient(135deg,
+                    rgb(26, 53, 96) 4%,
+                    rgb(107, 32, 157) 100%);
+            color: rgb(255, 247, 171);
+
+        }
+
+        .star .badge i {
+            animation: chunk 5s infinite;
+        }
+        .ruby .badge i, .diamond .badge i, .sapphire .badge i {
+            animation: rotate3d 5s infinite;
+        }
+
+        .bronze .badge i, .silver .badge i, .gold .badge i {
+            animation: bounce 5s infinite;
+            animation-timing-function: cubic-bezier(0.280, 0.840, 0.420, 1);
+        }
+
+        
+
+        .bronze .badge {
+            background: radial-gradient(circle at 30% 107%, #fff0e6 0%, #ffe5d1 5%, #ffd4a8 45%, #ffc9a0 60%, #fbf4f0 90%);
+            color: rgb(143, 52, 0);
+            text-shadow: 0px 0px 18px white, 0px 0px 8px white, 0px 0px 3px WHITE;
+
+        }
+
+        .silver .badge {
+            background: 
+    /* texture */
+    
+    /* colors and shadows */
+    radial-gradient(100% 10% at 60% 3%, #fff1, #0000 50%),
+    radial-gradient(100% 10% at 60% 97%, #fff3, #0000 50%),
+    linear-gradient(#fff1, #fff0 15%, #fff1 85%, #fff3),
+    linear-gradient(225deg, #ddd, #eee 10%, #eee 33%, #ddd 48% 52%, #fff 66% 75%, #ddd 90% 95%, #eee);
+            color: #666;
+            text-shadow: 0px 0px 18px white, 0px 0px 8px white, 0px 0px 3px WHITE;
+        }
+
+        .gold .badge {
+            background: radial-gradient(circle at 30% 107%, #fffae6 0%, #fff3d1 5%, #ffe8a8 45%, #ffe2a0 60%, #fbf7f0 90%);
+            text-shadow: 0px 0px 18px white, 0px 0px 8px white, 0px 0px 3px WHITE;
+            color: rgb(255, 174, 0);
+        }
+
+        .ruby .badge {
+            background: linear-gradient(to bottom right, #e0115f, #b10d49);
+            color: white;
+        }
+
+        .diamond .badge {
+            background: linear-gradient(to bottom right, #4b0082, #3c0065);
+            color: white;
+        }
+
+        .sapphire .badge {
+            background: linear-gradient(to bottom right, #0f52ba, #0d40a1);
+            color: white;
+        }
+
+        .platinum .badge {
+            background: linear-gradient(to bottom right, #f1f1f1, #e2e1dd);
+            color: rgb(255, 140, 0);
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+        }
+        .platinum .badge i {
+            animation: shakeAndScale 7s infinite;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <main>
+        <nav>
+            <div>
+                <button id="settings" onclick="showSettings()">Daily habits</button>
+                <button id="streaks" onclick="showStreaks()">Streaks</button>
+            </div>
+        </nav>
+        <div id="calendar"></div>
+    </main>
+    <dialog id="todoModal" class="modal">
+        <div>
+            <h2>Today's habits</h2>
+            <ul id="todoList"></ul>
+            <button id="closeTodoModal" class="close">Back</button>
+        </div>
+    </dialog>
+
+    <dialog id="settingsModal" class="modal">
+        <div>
+            <h2>Your daily habits</h2>
+            <ul id="settingsList"></ul>
+            <div id="newTaskForm">
+                <input type="text" id="newTask" placeholder="New task name" />
+                <button onclick="addTask()">Add</button>
+            </div>
+            <button id="closeSettingsModal" class="close">Back</button>
+        </div>
+    </dialog>
+
+    <dialog id="streaksModal" class="modal">
+        <div>
+            <h2>Your streaks</h2>
+            <div id="allTasksStreak">
+                <h4>All tasks</h4>
+                <span id="allTasksStreakScore"></span>
+                <div>days</div>
+            </div>
+            <div id="anyTasksStreak">
+                <h4>Any task</h4>
+                <span id="anyTasksStreakScore"></span>
+                <div>days</div>
+            </div>
+            <div style="display: flex; gap: 1em; flex-wrap: wrap;">
+                <div class="good">
+                    <span class="badge"><i class="fa fa-thumbs-up"></i></span>
+                </div>
+                <div class="star">
+                    <span class="badge"><i class="fa fa-star"></i></span>
+                </div>
+                <div class="bronze">
+                    <span class="badge"><i class="fa fa-trophy"></i></span>
+                </div>
+                <div class="silver">
+                    <span class="badge"><i class="fa fa-trophy"></i></span>
+                </div>
+                <div class="gold">
+                    <span class="badge"><i class="fa fa-trophy"></i></span>
+                </div>
+                <div class="ruby">
+                    <span class="badge"><i class="fa fa-gem"></i></span>
+                </div>
+                <div class="diamond">
+                    <span class="badge"><i class="fa fa-gem"></i></span>
+                </div>
+                <div class="sapphire">
+                    <span class="badge"><i class="fa fa-gem"></i></span>
+                </div>
+                <div class="platinum">
+                    <span class="badge"><i class="fa fa-bolt"></i></span>
+                </div>
+            </div>
+            <button id="closeStreaksModal" class="close">Back</button>
+        </div>
+    </dialog>
+
+    <script>
+        let dailyTasks = JSON.parse(localStorage.getItem('dailyTasks')) || [];
+        let today = new Date().toISOString().split('T')[0];
+        let year = new Date().getFullYear();
+
+        const colorRange = ['b71c1c', 'd32f2f', 'f57c00', 'fb8c00', 'fdd835', 'c0ca33', '7cb342', '388e3c'];
+
+        function getColor(completionRate) {
+            let colorIndex = Math.floor(completionRate * colorRange.length);
+            if (colorIndex === colorRange.length) colorIndex--;
+            return `#${colorRange[colorIndex]}`;
+        }
+
+
+
+        function showTodo() {
+            let ul = document.getElementById('todoList');
+            ul.innerHTML = '';
+            dailyTasks.forEach((task, i) => {
+                let li = document.createElement('li');
+                li.textContent = task.name;
+                if (task.done && task.done[today]) li.style.textDecoration = 'line-through';
+                li.onclick = () => {
+                    dailyTasks[i].done[today] = !dailyTasks[i].done[today];
+                    localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks));
+                    renderCalendar();
+                    showTodo();
+                };
+                ul.appendChild(li);
+            });
+            const todoModal = document.getElementById('todoModal');
+            todoModal.showModal();
+        }
+
+        function showSettings() {
+            let ul = document.getElementById('settingsList');
+            ul.innerHTML = '';
+            dailyTasks.forEach((task, i) => {
+                let li = document.createElement('li');
+                let removeButton = document.createElement('button');
+                // add <i> with classes fa-solid and fa-trash to the button
+                removeButton.innerHTML = '<i class="fa fa-trash"></i>';
+                removeButton.className = 'text';
+                removeButton.onclick = () => {
+                    dailyTasks.splice(i, 1);
+                    localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks));
+                    renderCalendar();
+                    showSettings();
+                };
+                // create span with text content and appent to the li
+                let span = document.createElement('span');
+                span.textContent = task.name;
+                li.appendChild(removeButton);
+                li.appendChild(span);
+                ul.appendChild(li);
+            });
+            const settingsModal = document.getElementById('settingsModal');
+            settingsModal.showModal();
+        }
+
+
+        function addTask() {
+            let newTask = document.getElementById('newTask').value;
+            dailyTasks.push({
+                id: new Date().getTime(),
+                name: newTask,
+                done: {},
+                startDate: new Date().toISOString().split('T')[0]
+            });
+            localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks));
+            renderCalendar();
+            document.getElementById('newTask').value = '';
+            showSettings();
+        }
+
+        let completeStreak = 0;
+        let anyTaskStreak = 0;
+
+        function getIconClass(streakClass) {
+            switch (streakClass) {
+                case 'good': return 'fa-thumbs-up';
+                case 'star': return 'fa-star';
+                case 'bronze': case 'silver': case 'gold': return 'fa-trophy';
+                case 'ruby': return 'fa-gem';
+                case 'diamond': return 'fa-gem';
+                case 'sapphire': return 'fa-gem';
+                case 'platinum': return 'fa-bolt';
+                default: return '';
+            }
+        }
+
+        function updateStreaks(completeStreak, anyTaskStreak) {
+            let allTasksStreakDiv = document.getElementById('allTasksStreakScore');
+            let allTasksStreakClass = getStreakClass(completeStreak);
+            allTasksStreakDiv.textContent = completeStreak;
+            allTasksStreakDiv.className = allTasksStreakClass;
+            document.getElementById('allTasksStreak').innerHTML += `<span class="badge"><i class="fa ${getIconClass(allTasksStreakClass)}"></i></span>`;
+            document.getElementById('allTasksStreak').className = allTasksStreakClass;
+
+            let anyTasksStreakDiv = document.getElementById('anyTasksStreakScore');
+            let anyTasksStreakClass = getStreakClass(anyTaskStreak);
+            anyTasksStreakDiv.textContent = anyTaskStreak;
+            anyTasksStreakDiv.className = anyTasksStreakClass;
+            document.getElementById('anyTasksStreak').innerHTML += `<span class="badge"><i class="fa ${getIconClass(anyTasksStreakClass)}"></i></span>`;
+            document.getElementById('anyTasksStreak').className = anyTasksStreakClass;
+        }
+
+        function showStreaks() {
+            const streaksModal = document.getElementById('streaksModal');
+            streaksModal.showModal();
+        }
+
+        document.getElementById('closeStreaksModal').addEventListener('click', function () {
+            document.getElementById('streaksModal').close();
+        });
+
+
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+
+            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            let completeStreak = 0;
+            let anyTaskStreak = 0;
+            let lastComplete = false;
+            let lastAnyTask = false;
+
+            document.getElementById('closeStreaksModal').addEventListener('click', function () {
+                document.getElementById('streaksModal').close();
+            });
+
+            for (let i = 0; i < 365; i++) {
+                const day = new Date(year, 0, i + 1);
+                const isoDay = new Date(day.getTime() - day.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+                dayDiv.id = isoDay;
+
+                const dayNameDiv = document.createElement('div');
+                dayNameDiv.textContent = dayNames[day.getDay() == 0 ? 6 : day.getDay() - 1];
+                dayNameDiv.style.width = '100%';
+                dayNameDiv.style.textAlign = 'center';
+
+                const monthNameDiv = document.createElement('div');
+                monthNameDiv.textContent = monthNames[day.getMonth()];
+                monthNameDiv.style.width = '100%';
+                monthNameDiv.style.textAlign = 'center';
+
+                const dateDiv = document.createElement('div');
+                dateDiv.textContent = String(day.getDate()).padStart(2, '0');
+                dateDiv.style.width = '100%';
+                dateDiv.style.textAlign = 'center';
+
+                dayDiv.appendChild(dayNameDiv);
+                dayDiv.appendChild(monthNameDiv);
+                dayDiv.appendChild(dateDiv);
+
+                if (isoDay <= today) {
+                    let activeTasks = dailyTasks.filter(task => task.startDate <= isoDay);
+                    if (activeTasks.length) {
+                        const completionRate = activeTasks.filter(t => t.done && t.done[isoDay]).length / activeTasks.length;
+                        let completionClass = `completion-${Math.floor(completionRate / 0.2) * 20}`;
+                        dayDiv.classList.add(completionClass);
+
+                        if (completionRate == 1) {
+                            if (lastComplete) completeStreak++;
+                            else completeStreak = 1;
+                            lastComplete = true;
+                        } else {
+                            lastComplete = false;
+                        }
+
+                        if (completionRate > 0) {
+                            if (lastAnyTask) anyTaskStreak++;
+                            else anyTaskStreak = 1;
+                            lastAnyTask = true;
+                        } else {
+                            lastAnyTask = false;
+                        }
+                    } else {
+                        if (isoDay < today) {
+                            dayDiv.classList.add('dns');
+                        }
+                    }
+
+                    if (isoDay === today) {
+                        dayDiv.onclick = showTodo;
+                        dayDiv.classList.add('today');
+                    }
+
+                    if (anyTaskStreak > 0) {
+                        dayDiv.classList.add(getStreakClass(anyTaskStreak));
+                    }
+                }
+                calendar.appendChild(dayDiv);
+            }
+
+            const todayDiv = document.getElementById(today);
+            todayDiv.scrollIntoView({ block: 'center' });
+            updateStreaks(completeStreak, anyTaskStreak);
+
+        }
+
+        function getStreakClass(streakDays) {
+            if (streakDays < 7) return 'good';
+            if (streakDays < 14) return 'star';
+            if (streakDays < 30) return 'bronze';
+            if (streakDays < 60) return 'silver';
+            if (streakDays < 90) return 'gold';
+            if (streakDays < 180) return 'ruby';
+            if (streakDays < 365) return 'diamond';
+            if (streakDays < 730) return 'sapphire';
+            return 'platinum';
+        }
+
+
+
+
+
+        document.getElementById('closeTodoModal').addEventListener('click', function () {
+            document.getElementById('todoModal').close();
+        });
+
+        document.getElementById('closeSettingsModal').addEventListener('click', function () {
+            document.getElementById('settingsModal').close();
+        });
+
+
+
+        renderCalendar();
+
+        const todayDiv = document.getElementById(today);
+        todayDiv.scrollIntoView({ block: 'center' });
+
+        showStreaks();
+    </script>
+</body>
+
+</html>
