@@ -183,7 +183,6 @@
             justify-content: center;
             padding: 10px;
             box-sizing: border-box;
-            background-color: rgba(13, 27, 42, 0.05);
             text-transform: uppercase;
             color: rgb(13, 27, 42);
             font-size: small;
@@ -192,6 +191,8 @@
             transition: all 0.5s;
             /* add transition for when another class changes the background colour */
             transition-property: background-color, outline-color;
+            margin: 0.5em;
+            border-radius: 5px;
         }
 
         .day.dns {
@@ -199,7 +200,7 @@
         }
 
         .day:nth-child(2n + 1) {
-            background-color: rgba(13, 27, 42, 0.08);
+            background-color: rgba(13, 27, 42, 0.01);
         }
 
         .day div {
