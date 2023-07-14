@@ -634,7 +634,6 @@
             let allTasksStreakClass = getStreakClass(completeStreak);
             allTasksStreakDiv.textContent = completeStreak;
             allTasksStreakDiv.className = allTasksStreakClass;
-            // if theres a .badge span replace it, otherwise add it to the end
             if (document.getElementById('allTasksStreak').querySelector('.badge')) {
                 document.getElementById('allTasksStreak').querySelector('.badge').outerHTML = `<span class="badge"><i class="fa ${getIconClass(allTasksStreakClass)}"></i></span>`;
             } else {
@@ -646,7 +645,12 @@
             let anyTasksStreakClass = getStreakClass(anyTaskStreak);
             anyTasksStreakDiv.textContent = anyTaskStreak;
             anyTasksStreakDiv.className = anyTasksStreakClass;
-            document.getElementById('anyTasksStreak').innerHTML += `<span class="badge"><i class="fa ${getIconClass(anyTasksStreakClass)}"></i></span>`;
+                        // if theres a .badge span replace it, otherwise add it to the end
+            if (document.getElementById('anyTasksStreak').querySelector('.badge')) {
+                document.getElementById('anyTasksStreak').querySelector('.badge').outerHTML = `<span class="badge"><i class="fa ${getIconClass(anyTasksStreakClass)}"></i></span>`;
+            } else {
+                document.getElementById('anyTasksStreak').innerHTML += `<span class="badge"><i class="fa ${getIconClass(anyTasksStreakClass)}"></i></span>`;
+            }
             document.getElementById('anyTasksStreak').className = anyTasksStreakClass;
         }
 
