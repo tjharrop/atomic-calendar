@@ -38,6 +38,10 @@
             font-size: medium;
         }
 
+        button:hover {
+            background: #062f6b;
+        }
+
         button.text {
             background: none;
             color: #1B263B;
@@ -121,38 +125,43 @@
         }
 
         #settingsModal ul,
-        #todoModal ul {
+        #todoModal ul, #todoListTwo {
             margin: 20px 0;
         }
 
         #settingsModal li,
-        #todoModal li {
+        #todoModal li, #todoListTwo li {
             padding: 10px 0;
         }
 
         #settingsModal li button,
-        #todoModal li button {
+        #todoModal li button, #todoListTwo li button {
             margin-right: 1em;
         }
 
-        #todoList li {
+        #settingsModal p {
+            text-align: center;
+            margin: 2em 0;
+        }
+
+        #todoList li, #todoListTwo li {
             font-size: 1.2em;
             margin-left: 1em;
         }
 
-        #todoList li {
+        #todoList li, #todoListTwo li {
             padding-left: 40px;
             position: relative;
             cursor: pointer;
             color: #8c0808;
         }
-        #todoList li:hover {
+        #todoList li:hover, #todoListTwo li:hover {
             font-weight: bold;
         }
-        #todoList li.done {
+        #todoList li.done, #todoListTwo li.done {
             color:#008614;
         }
-        #todoList li:before {
+        #todoList li:before, #todoListTwo li:before {
   content: "\f00c"; /* FontAwesome cross icon */
   position: absolute;
   left: 0;
@@ -165,7 +174,7 @@
 }
 
 /* CSS class for li with the "done" state and a tick icon */
-#todoList li.done:before {
+#todoList li.done:before, #todoListTwo li.done:before {
   content: "\f00c"; /* FontAwesome tick icon */
   color:#008614;
   opacity: 1;
@@ -311,6 +320,12 @@
             border-top-left-radius: 4px;
             border-bottom-left-radius: 4px;
             flex-grow: 1;
+        }
+
+        #newTaskForm input:focus-visible, #newTaskForm input:focus {
+            outline-offset: 2px;
+            outline-color:#d8d8cb;
+            outline-width: 5px;
         }
 
         #newTaskForm button {
@@ -466,8 +481,12 @@
             <div>
                 <button id="settings" onclick="showSettings()">Daily habits</button>
                 <button id="streaks" onclick="showStreaks()">Streaks</button>
+                <!-- <button id="cal" onclick="showCalendar()">Calendar</button> -->
             </div>
         </nav>
+        <div id="content" style="display: none;">
+            <ul id="todoListTwo"></ul>
+        </div>
         <div id="calendar"></div>
     </main>
     <dialog id="todoModal" class="modal">
@@ -481,6 +500,7 @@
     <dialog id="settingsModal" class="modal">
         <div>
             <h2>Your daily habits</h2>
+            <p>Enter the daily habits you want to build.</p>
             <ul id="settingsList"></ul>
             <div id="newTaskForm">
                 <input type="text" id="newTask" placeholder="New task name" />
@@ -536,6 +556,14 @@
         </div>
     </dialog>
 
+    <dialog id="calendarModal" class="modal">
+        <div>
+            <h2>Calendar</h2>
+            <!-- <div id="calendar" style="max-height: 85%; overflow: scroll;"></div> -->
+            <button id="closeCalendarModal" class="close">Back</button>
+        </div>
+    </dialog>
+
     <script>
         let dailyTasks = JSON.parse(localStorage.getItem('dailyTasks')) || [];
         let today = new Date().toISOString().split('T')[0];
@@ -570,6 +598,26 @@
             });
             const todoModal = document.getElementById('todoModal');
             todoModal.showModal();
+        }
+
+        // render toDoListTwo
+        function showTodoTwo() {
+            let ul = document.getElementById('todoListTwo');
+            ul.innerHTML = '';
+            dailyTasks.forEach((task, i) => {
+                let li = document.createElement('li');
+                li.textContent = task.name;
+                if (task.done && task.done[today]){
+                    li.classList.add('done');
+                }
+                li.onclick = () => {
+                    dailyTasks[i].done[today] = !dailyTasks[i].done[today];
+                    localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks));
+                    renderCalendar();
+                    showTodoTwo();
+                };
+                ul.appendChild(li);
+            });
         }
 
         function showSettings() {
@@ -612,6 +660,15 @@
             document.getElementById('newTask').value = '';
             showSettings();
         }
+
+        function showCalendar() {
+            const calendarModal = document.getElementById('calendarModal');
+            calendarModal.showModal();
+        }
+
+        document.getElementById('closeCalendarModal').addEventListener('click', function () {
+            document.getElementById('calendarModal').close();
+        });
 
         let completeStreak = 0;
         let anyTaskStreak = 0;
@@ -792,7 +849,13 @@
         const todayDiv = document.getElementById(today);
         todayDiv.scrollIntoView({ block: 'center' });
 
+        // if the storage doesnt exist and it's a first visit, show the settings modal
+        if (!localStorage.getItem('dailyTasks')) {
+            showSettings();
+        }
+
         // showStreaks();
+        showTodoTwo();
     </script>
 </body>
 
