@@ -367,6 +367,13 @@
             margin-bottom: 1em;
         }
 
+        .complete {
+            margin: 1em auto;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.4;
+        }
+
         /* show the streaks side-by-side for media query over 800px */
         @media (min-width: 800px) {
 
@@ -493,7 +500,7 @@
         <div>
             <h2>Today's habits</h2>
             <ul id="todoList"></ul>
-            <button id="closeTodoModal" class="close">Back</button>
+            <button id="closeTodoModal" class="close">Habit tracker</button>
         </div>
     </dialog>
 
@@ -506,13 +513,14 @@
                 <input type="text" id="newTask" placeholder="New task name" />
                 <button onclick="addTask()">Add</button>
             </div>
-            <button id="closeSettingsModal" class="close">Back</button>
+            <button id="closeSettingsModal" class="close">Habit tracker</button>
         </div>
     </dialog>
 
     <dialog id="streaksModal" class="modal">
         <div>
             <h2>Your streaks</h2>
+            <div class="complete">Building habits is about consistency and simplicity. Here's how many days you've completed all, or some, of your habits.</div>
             <div id="allTasksStreak">
                 <h4>All tasks</h4>
                 <span id="allTasksStreakScore"></span>
@@ -552,7 +560,7 @@
                     <span class="badge"><i class="fa fa-bolt"></i></span>
                 </div>
             </div> -->
-            <button id="closeStreaksModal" class="close">Back</button>
+            <button id="closeStreaksModal" class="close">Habit tracker</button>
         </div>
     </dialog>
 
@@ -560,14 +568,17 @@
         <div>
             <h2>Calendar</h2>
             <!-- <div id="calendar" style="max-height: 85%; overflow: scroll;"></div> -->
-            <button id="closeCalendarModal" class="close">Back</button>
+            <button id="closeCalendarModal" class="close">Habit tracker</button>
         </div>
     </dialog>
 
     <script>
         let dailyTasks = JSON.parse(localStorage.getItem('dailyTasks')) || [];
-        let today = new Date().toISOString().split('T')[0];
         let year = new Date().getFullYear();
+        let today = new Date();
+        let localOffset = today.getTimezoneOffset() * 60000;
+        today = new Date(today - localOffset);
+        today = today.toISOString().split('T')[0];
 
         const colorRange = ['b71c1c', 'd32f2f', 'f57c00', 'fb8c00', 'fdd835', 'c0ca33', '7cb342', '388e3c'];
 
@@ -592,7 +603,15 @@
                     dailyTasks[i].done[today] = !dailyTasks[i].done[today];
                     localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks));
                     renderCalendar();
+                    document.getElementById('todoModal').close();
                     showTodo();
+                    //if all tasks for today are complete hide todo and show streaks
+                    if (dailyTasks.every(task => task.done[today])) {
+                        document.getElementById('todoModal').close();
+                        document.getElementById('streaksModal').close();
+                        allComplete();
+                        document.getElementById('streaksModal').showModal();
+                    }
                 };
                 ul.appendChild(li);
             });
@@ -805,6 +824,8 @@
                         dayDiv.classList.add('today');
                     }
 
+                    console.log(`isoDay: ${isoDay}, today: ${today}, completeStreak: ${completeStreak}, anyTaskStreak: ${anyTaskStreak}`)
+
                     if (anyTaskStreak > 0) {
                         dayDiv.classList.add(getStreakClass(anyTaskStreak));
                     }
@@ -852,6 +873,19 @@
         // if the storage doesnt exist and it's a first visit, show the settings modal
         if (!localStorage.getItem('dailyTasks')) {
             showSettings();
+        }
+        // else if there are tasks in localstorage but they're not all done yet open the todo modal
+        else if (dailyTasks.some(task => !task.done || !task.done[today])) {
+            showTodo();
+        }
+        // elseif todays tasks are complete inject a message saying so into the streaks modal and open it
+        else if (dailyTasks.every(task => task.done && task.done[today])) {
+            allComplete();
+            showStreaks();
+        }
+
+        function allComplete(){
+            document.getElementById('streaksModal').querySelector('.complete').textContent = 'You\'ve completed all your habit building tasks today. Share your streak with friends so they know you\'re better than them.';
         }
 
         // showStreaks();
